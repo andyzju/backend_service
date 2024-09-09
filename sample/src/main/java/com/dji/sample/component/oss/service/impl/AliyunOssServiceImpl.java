@@ -1,6 +1,5 @@
 package com.dji.sample.component.oss.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.OSSException;
@@ -41,19 +40,12 @@ public class AliyunOssServiceImpl implements IOssService {
         return OssTypeEnum.ALIYUN;
     }
 
-    /**
-     *  aliyun获取Credentials
-     * @return
-     */
     @Override
     public CredentialsToken getCredentials() {
-
-        log.info("AliyunOssServiceImpl::getCredentials start ...");
 
         try {
             DefaultProfile profile = DefaultProfile.getProfile(
                     OssConfiguration.region, OssConfiguration.accessKey, OssConfiguration.secretKey);
-            log.info("AliyunOssServiceImpl::getCredentials start  profile={}", JSON.toJSONString(profile));
             IAcsClient client = new DefaultAcsClient(profile);
 
             AssumeRoleRequest request = new AssumeRoleRequest();
@@ -62,12 +54,9 @@ public class AliyunOssServiceImpl implements IOssService {
             request.setRoleSessionName(OssConfiguration.roleSessionName);
 
             AssumeRoleResponse.Credentials response = client.getAcsResponse(request).getCredentials();
-
-            log.info("AliyunOssServiceImpl::getCredentials, request={},credentials={}",request.getRoleArn(), response.getSecurityToken());
             return new CredentialsToken(response.getAccessKeyId(), response.getAccessKeySecret(), response.getSecurityToken(), OssConfiguration.expire);
 
         } catch (ClientException e) {
-            log.error("getCredentials exception={}",e.getMessage(),e);
             log.debug("Failed to obtain sts.");
             e.printStackTrace();
         }
@@ -105,8 +94,6 @@ public class AliyunOssServiceImpl implements IOssService {
         if (ossClient.doesObjectExist(bucket, objectKey)) {
             throw new RuntimeException("The filename already exists.");
         }
-
-        log.info("AliyunOssServiceImpl::putObject, bucket={},objectKey={}, input={}",bucket,objectKey,input);
         PutObjectResult objectResult = ossClient.putObject(new PutObjectRequest(bucket, objectKey, input, new ObjectMetadata()));
         log.info("Upload FlighttaskCreateFile: {}", objectResult.getETag());
     }

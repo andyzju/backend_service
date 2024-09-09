@@ -147,9 +147,6 @@ public class DeviceLogsServiceImpl extends AbstractLogService implements IDevice
 
     @Override
     public HttpResultResponse pushFileUpload(String username, String deviceSn, DeviceLogsCreateParam param) {
-
-        log.info("DeviceLogsServiceImpl::pushFileUpload, username={}, deviceSn={}, param={}",
-                username,  deviceSn,  param);
         StsCredentialsResponse stsCredentials = storageService.getSTSCredentials();
         stsCredentials.getCredentials().setExpire(System.currentTimeMillis() + (stsCredentials.getCredentials().getExpire() - 60) * 1000);
         LogsUploadCredentialsDTO credentialsDTO = new LogsUploadCredentialsDTO(stsCredentials);

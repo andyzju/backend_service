@@ -215,7 +215,7 @@ public class DeviceFirmwareServiceImpl extends AbstractFirmwareService implement
             String objectKey = OssConfiguration.objectDirPrefix + File.separator + firmwareId + FirmwareFileProperties.FIRMWARE_FILE_SUFFIX;
 
             ossServiceContext.putObject(OssConfiguration.bucket, objectKey, file.getInputStream());
-            log.info("DeviceFirmwareService::upload success. {}", file.getOriginalFilename());
+            log.info("upload success. {}", file.getOriginalFilename());
             DeviceFirmwareDTO firmware = DeviceFirmwareDTO.builder()
                     .releaseNote(param.getReleaseNote())
                     .firmwareStatus(param.getStatus())

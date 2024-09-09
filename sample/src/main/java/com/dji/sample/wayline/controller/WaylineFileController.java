@@ -1,6 +1,7 @@
 package com.dji.sample.wayline.controller;
 
 import com.dji.sample.common.model.CustomClaim;
+import com.dji.sample.wayline.model.dto.ScreenDeviceWaylineDTO;
 import com.dji.sample.wayline.model.dto.WaylineFileDTO;
 import com.dji.sample.wayline.service.IWaylineFileService;
 import com.dji.sdk.cloudapi.device.DeviceEnum;
@@ -9,10 +10,7 @@ import com.dji.sdk.cloudapi.wayline.api.IHttpWaylineService;
 import com.dji.sdk.common.HttpResultResponse;
 import com.dji.sdk.common.PaginationData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;

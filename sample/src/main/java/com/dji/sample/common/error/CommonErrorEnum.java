@@ -9,8 +9,6 @@ import com.dji.sdk.common.IErrorInfo;
  */
 public enum CommonErrorEnum implements IErrorInfo {
 
-    NO_DEVICE_ONLINE(200000, "no device online"),
-
     ILLEGAL_ARGUMENT(200001, "illegal argument"),
 
     REDIS_DATA_NOT_FOUND(201404, "Redis data does not exist."),

@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,13 +40,9 @@ public class DeviceDataServiceImpl implements IDeviceDataService {
     public List<DeviceDataStatusDTO> getDevicesDataStatus(String workspaceId) {
         List<DeviceDTO> devices = deviceService.getDevicesByParams(DeviceQueryParam.builder()
                 .domains(List.of(DeviceDomainEnum.DOCK.getDomain())).workspaceId(workspaceId).build());
-//        if (CollectionUtils.isEmpty(devices)) {
-//            throw new RuntimeException(CommonErrorEnum.NO_DEVICE_ONLINE.getMessage());
-//        }
         if (CollectionUtils.isEmpty(devices)) {
-            return new ArrayList<DeviceDataStatusDTO>();
+            throw new RuntimeException(CommonErrorEnum.ILLEGAL_ARGUMENT.getMessage());
         }
-
         return devices.stream().map(device -> DeviceDataStatusDTO.builder()
                         .deviceName(device.getDeviceName())
                         .deviceSn(device.getDeviceSn())

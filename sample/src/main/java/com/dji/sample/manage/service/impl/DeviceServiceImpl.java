@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dji.sample.common.error.CommonErrorEnum;
+import com.dji.sample.common.util.EmptyUtils;
 import com.dji.sample.component.mqtt.model.EventsReceiver;
 import com.dji.sample.component.websocket.model.BizCodeEnum;
 import com.dji.sample.component.websocket.service.IWebSocketMessageService;
@@ -645,6 +646,15 @@ public class DeviceServiceImpl implements IDeviceService {
                         .sn(gateway.getDeviceSn())
                         .type(DroneAuthorityEnum.FLIGHT)
                         .build());
+    }
+
+    @Override
+    public PayloadIndex getDevicePayload(String deviceSn) {
+        List<DevicePayloadDTO> devicePayloadDTOList = payloadService.getDevicePayloadEntitiesByDeviceSn(deviceSn);
+        if (EmptyUtils.isNull(devicePayloadDTOList)){
+            return null;
+        }
+        return devicePayloadDTOList.get(0).getPayloadIndex();
     }
 
     /**

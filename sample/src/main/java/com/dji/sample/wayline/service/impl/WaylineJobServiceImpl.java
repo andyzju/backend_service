@@ -2,6 +2,7 @@ package com.dji.sample.wayline.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dji.sample.component.mqtt.model.EventsReceiver;
 import com.dji.sample.component.redis.RedisConst;
@@ -12,7 +13,7 @@ import com.dji.sample.manage.service.IDeviceService;
 import com.dji.sample.media.model.MediaFileCountDTO;
 import com.dji.sample.media.service.IFileService;
 import com.dji.sample.wayline.dao.IWaylineJobMapper;
-import com.dji.sample.wayline.model.dto.WaylineJobDTO;
+import com.dji.sample.wayline.model.dto.*;
 import com.dji.sample.wayline.model.entity.WaylineJobEntity;
 import com.dji.sample.wayline.model.enums.WaylineJobStatusEnum;
 import com.dji.sample.wayline.model.param.CreateJobParam;
@@ -223,6 +224,133 @@ public class WaylineJobServiceImpl implements IWaylineJobService {
             }
         }
         return WaylineJobStatusEnum.UNKNOWN;
+    }
+
+    @Override
+    public PaginationData<ScreenDeviceWaylineDTO> getDeviceWaylineList(String workspaceId, long page, long pageSize) {
+        Page<WaylineJobEntity> pageData = mapper.selectPage(
+                new Page<WaylineJobEntity>(page, pageSize),
+                new LambdaQueryWrapper<WaylineJobEntity>()
+                        .eq(WaylineJobEntity::getWorkspaceId, workspaceId)
+                        .orderByDesc(WaylineJobEntity::getId));
+        List<ScreenDeviceWaylineDTO> records = pageData.getRecords()
+                .stream()
+                .map(this::entity3Dto)
+                .collect(Collectors.toList());
+
+        return new PaginationData<ScreenDeviceWaylineDTO>(records,
+                new Pagination(pageData.getCurrent(), pageData.getSize(), pageData.getTotal()));
+    }
+
+    /**
+     * 获取设备航线
+     *
+     * @param waylineId
+     * @param workspaceId
+     * @return
+     */
+    @Override
+    public ScreenWaylineDTO getDeviceWayline(String workspaceId, String waylineId) {
+        return waylineFileService.getScreenWaylineByWaylineId(workspaceId, waylineId);
+    }
+
+    /**
+     * 获取设备任务
+     *
+     * @param jobId
+     * @return
+     */
+    @Override
+    public ScreenJobDTO getDeviceJob(String jobId) {
+        WaylineJobEntity waylineJobEntity = mapper.selectOne(Wrappers.<WaylineJobEntity>lambdaQuery()
+                .eq(WaylineJobEntity::getJobId, jobId));
+        return entityScreenJob(waylineJobEntity);
+    }
+
+    /**
+     * 获取设备任务信息汇总
+     *
+     * @param workspaceId
+     * @param deviceSn
+     * @return
+     */
+    @Override
+    public ScreenDeviceJobInfoDTO getDeviceJobInfo(String workspaceId, String deviceSn) {
+        Integer total = mapper.selectCount(
+                Wrappers.<WaylineJobEntity>lambdaQuery()
+                        .eq(WaylineJobEntity::getDockSn, deviceSn)
+                        .notIn(WaylineJobEntity::getStatus, WaylineJobStatusEnum.CANCEL.getVal(), WaylineJobStatusEnum.UNKNOWN.getVal())
+                        .eq(WaylineJobEntity::getWorkspaceId, workspaceId));
+
+        Integer success = mapper.selectCount(
+                Wrappers.<WaylineJobEntity>lambdaQuery()
+                        .eq(WaylineJobEntity::getDockSn, deviceSn)
+                        .eq(WaylineJobEntity::getStatus, WaylineJobStatusEnum.SUCCESS.getVal())
+                        .eq(WaylineJobEntity::getWorkspaceId, workspaceId));
+
+        Integer failed = mapper.selectCount(
+                Wrappers.<WaylineJobEntity>lambdaQuery()
+                        .eq(WaylineJobEntity::getDockSn, deviceSn)
+                        .eq(WaylineJobEntity::getStatus, WaylineJobStatusEnum.FAILED.getVal())
+                        .eq(WaylineJobEntity::getWorkspaceId, workspaceId));
+
+        Integer prepare = mapper.selectCount(
+                Wrappers.<WaylineJobEntity>lambdaQuery()
+                        .eq(WaylineJobEntity::getDockSn, deviceSn)
+                        .in(WaylineJobEntity::getStatus, WaylineJobStatusEnum.PENDING.getVal(),
+                                WaylineJobStatusEnum.IN_PROGRESS.getVal(),
+                                WaylineJobStatusEnum.PAUSED.getVal())
+                        .eq(WaylineJobEntity::getWorkspaceId, workspaceId));
+
+        return new ScreenDeviceJobInfoDTO(success, total, failed, prepare);
+    }
+
+    public ScreenJobDTO entityScreenJob(WaylineJobEntity entity){
+        if (entity == null) {
+            return null;
+        }
+        ScreenJobDTO.ScreenJobDTOBuilder builder =
+                ScreenJobDTO.builder()
+                        .name(entity.getName())
+                        .taskType(TaskTypeEnum.find(entity.getTaskType()))
+                        .waylineType(WaylineTypeEnum.find(entity.getWaylineType()))
+                        .username(entity.getUsername())
+                        .executeTime(Objects.nonNull(entity.getExecuteTime()) ?
+                                LocalDateTime.ofInstant(Instant.ofEpochMilli(entity.getExecuteTime()), ZoneId.systemDefault()) : null)
+                        .endTime(Objects.nonNull(entity.getEndTime()) ?
+                                LocalDateTime.ofInstant(Instant.ofEpochMilli(entity.getEndTime()), ZoneId.systemDefault()) : null)
+                        .status(WaylineJobStatusEnum.find(entity.getStatus()))
+                        .rthAltitude(entity.getRthAltitude())
+                        .outOfControlAction(OutOfControlActionEnum.find(entity.getOutOfControlAction()))
+                        .beginTime(Objects.nonNull(entity.getBeginTime()) ?
+                                LocalDateTime.ofInstant(Instant.ofEpochMilli(entity.getBeginTime()), ZoneId.systemDefault()) : null)
+                        .completedTime(Objects.nonNull(entity.getCompletedTime()) ?
+                                LocalDateTime.ofInstant(Instant.ofEpochMilli(entity.getCompletedTime()), ZoneId.systemDefault()) : null);
+        return builder.build();
+    }
+
+    public ScreenDeviceWaylineDTO entity3Dto(WaylineJobEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        DeviceDTO deviceDTO = deviceService.getDeviceBySn(entity.getDockSn())
+                .orElse(DeviceDTO.builder().build());
+
+        ScreenDeviceWaylineDTO.ScreenDeviceWaylineDTOBuilder builder = ScreenDeviceWaylineDTO.builder()
+                .waylineId(entity.getFileId())
+                .waylineName(waylineFileService.getWaylineByWaylineId(entity.getWorkspaceId(), entity.getFileId())
+                        .orElse(new GetWaylineListResponse()).getName())
+                .deviceName(deviceDTO.getDeviceName())
+                .deviceSn(entity.getDockSn())
+                .deviceStatus(deviceDTO.getStatus())
+                .jobId(entity.getJobId())
+                .jobName(entity.getName())
+                .completedTime(Objects.nonNull(entity.getCompletedTime()) ?
+                        LocalDateTime.ofInstant(Instant.ofEpochMilli(entity.getCompletedTime()), ZoneId.systemDefault()) : null)
+                .childSn(deviceDTO.getChildDeviceSn())
+                .jobStatus(entity.getStatus());
+
+        return builder.build();
     }
 
     private WaylineJobDTO entity2Dto(WaylineJobEntity entity) {

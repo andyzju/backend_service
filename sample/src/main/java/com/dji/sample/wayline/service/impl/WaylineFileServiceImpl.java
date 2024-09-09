@@ -2,11 +2,13 @@ package com.dji.sample.wayline.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dji.sample.component.oss.model.OssConfiguration;
 import com.dji.sample.component.oss.service.impl.OssServiceContext;
 import com.dji.sample.wayline.dao.IWaylineFileMapper;
 import com.dji.sample.wayline.model.dto.KmzFileProperties;
+import com.dji.sample.wayline.model.dto.ScreenWaylineDTO;
 import com.dji.sample.wayline.model.dto.WaylineFileDTO;
 import com.dji.sample.wayline.model.entity.WaylineFileEntity;
 import com.dji.sample.wayline.service.IWaylineFileService;
@@ -191,6 +193,31 @@ public class WaylineFileServiceImpl implements IWaylineFileService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 获取大屏的航线图文件
+     *
+     * @param workspaceId
+     * @param waylineId
+     * @return
+     */
+    @Override
+    public ScreenWaylineDTO getScreenWaylineByWaylineId(String workspaceId, String waylineId) {
+        WaylineFileEntity waylineFileEntity = mapper.selectOne(Wrappers.<WaylineFileEntity>lambdaQuery()
+                .eq(WaylineFileEntity::getWaylineId, waylineId));
+        return toWaylineDTO(waylineFileEntity);
+    }
+
+    public ScreenWaylineDTO toWaylineDTO(WaylineFileEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        ScreenWaylineDTO.ScreenWaylineDTOBuilder builder = ScreenWaylineDTO.builder()
+                .name(entity.getName());
+
+        return builder.build();
     }
 
     private Optional<WaylineFileDTO> validKmzFile(MultipartFile file) {

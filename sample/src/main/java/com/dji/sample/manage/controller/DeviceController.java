@@ -2,7 +2,11 @@ package com.dji.sample.manage.controller;
 
 import com.dji.sample.manage.model.dto.DeviceDTO;
 import com.dji.sample.manage.model.dto.DeviceFirmwareUpgradeDTO;
+import com.dji.sample.manage.model.dto.ScreenDeviceDTO;
+import com.dji.sample.manage.service.IDeviceRedisService;
 import com.dji.sample.manage.service.IDeviceService;
+import com.dji.sdk.cloudapi.device.OsdDockDrone;
+import com.dji.sdk.cloudapi.device.PayloadIndex;
 import com.dji.sdk.common.HttpResultResponse;
 import com.dji.sdk.common.PaginationData;
 import com.dji.sdk.exception.CloudSDKErrorEnum;
@@ -12,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +32,46 @@ public class DeviceController {
 
     @Autowired
     private IDeviceService deviceService;
+
+    @Autowired
+    private IDeviceRedisService deviceRedisService;
+
+    @GetMapping("/screen/{device_sn}")
+    public HttpResultResponse<ScreenDeviceDTO> getDevice(@PathVariable("device_sn") String deviceSn) {
+        ScreenDeviceDTO screenDeviceDTO = ScreenDeviceDTO.defaultDevice();
+        Optional<DeviceDTO> deviceOpt = deviceService.getDeviceBySn(deviceSn);
+        Optional<OsdDockDrone> deviceOsd = deviceRedisService.getDeviceOsd(deviceSn, OsdDockDrone.class);
+
+        if (deviceOpt.isPresent()) {
+            DeviceDTO deviceDTO = deviceOpt.get();
+            screenDeviceDTO.setDeviceName(deviceDTO.getDeviceName());
+            screenDeviceDTO.setWorkspaceName(deviceDTO.getWorkspaceName());
+            screenDeviceDTO.setStatus(deviceDTO.getStatus());
+            screenDeviceDTO.setChildDeviceSn(deviceDTO.getChildDeviceSn());
+            screenDeviceDTO.setLoginTime(deviceDTO.getLoginTime());
+            screenDeviceDTO.setFirmwareVersion(deviceDTO.getFirmwareVersion());
+            screenDeviceDTO.setType(deviceDTO.getType().name());
+
+            if (deviceOsd.isPresent()) {
+                OsdDockDrone osdDockDrone = deviceOsd.get();
+                screenDeviceDTO.setStorageLess(subtract(osdDockDrone.getStorage().getTotal(), osdDockDrone.getStorage().getUsed()));
+                screenDeviceDTO.setRTKSign(osdDockDrone.getPositionState().getRtkNumber());
+                screenDeviceDTO.setGpsSign(osdDockDrone.getPositionState().getGpsNumber());
+                screenDeviceDTO.setCapacityPercent(osdDockDrone.getBattery().getCapacityPercent());
+            }
+        }
+
+        return HttpResultResponse.success(screenDeviceDTO);
+    }
+
+    private static Long subtract(Long one, Long two) {
+        return BigDecimal.valueOf(one).subtract(BigDecimal.valueOf(two)).longValue();
+    }
+
+    @GetMapping("/screen/paload/{device_sn}")
+    public HttpResultResponse<PayloadIndex> getDevicePayload(@PathVariable("device_sn") String deviceSn) {
+        return HttpResultResponse.success(deviceService.getDevicePayload(deviceSn));
+    }
 
     /**
      * Get the topology list of all online devices in one workspace.

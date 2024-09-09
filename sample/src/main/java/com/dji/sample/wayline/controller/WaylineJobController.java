@@ -1,7 +1,7 @@
 package com.dji.sample.wayline.controller;
 
 import com.dji.sample.common.model.CustomClaim;
-import com.dji.sample.wayline.model.dto.WaylineJobDTO;
+import com.dji.sample.wayline.model.dto.*;
 import com.dji.sample.wayline.model.param.CreateJobParam;
 import com.dji.sample.wayline.model.param.UpdateJobParam;
 import com.dji.sample.wayline.service.IFlightTaskService;
@@ -32,6 +32,32 @@ public class WaylineJobController {
 
     @Autowired
     private IFlightTaskService flighttaskService;
+
+    @GetMapping("/screen/{workspace_id}/{wayline_id}")
+    public HttpResultResponse<ScreenWaylineDTO> getDeviceWayline(@PathVariable(name = "workspace_id") String workspaceId,
+                                                                 @PathVariable(name = "wayline_id") String waylineId) {
+        return HttpResultResponse.success(waylineJobService.getDeviceWayline(workspaceId, waylineId));
+    }
+
+    @GetMapping("/screen/{job_id}")
+    public HttpResultResponse<ScreenJobDTO> getDeviceJob(@PathVariable(name = "job_id") String jobId) {
+        return HttpResultResponse.success(waylineJobService.getDeviceJob(jobId));
+    }
+
+    @GetMapping("/screen/{workspace_id}/device/{device_sn}")
+    public HttpResultResponse<ScreenDeviceJobInfoDTO> getDeviceJobInfo(
+            @PathVariable(name = "workspace_id") String workspaceId,
+            @PathVariable(name = "device_sn") String deviceSn) {
+        return HttpResultResponse.success(waylineJobService.getDeviceJobInfo(workspaceId, deviceSn));
+    }
+
+    @GetMapping("/screen/{workspace_id}/job/list")
+    public HttpResultResponse<PaginationData<ScreenDeviceWaylineDTO>> getDeviceJobList(
+            @PathVariable(name = "workspace_id") String workspaceId,
+            @RequestParam(defaultValue = "1") Long page,
+            @RequestParam(value = "page_size", defaultValue = "50") Long pageSize) {
+        return HttpResultResponse.success(waylineJobService.getDeviceWaylineList(workspaceId, page, pageSize));
+    }
 
     /**
      * Create a wayline task for the Dock.

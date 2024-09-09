@@ -2,7 +2,6 @@
 
 ## What is the DJI Cloud API?
 
-
 The launch of the Cloud API mainly solves the problem of developers reinventing the wheel. For developers who do not need in-depth customization of APP, they can directly use DJI Pilot2 to communicate with the third cloud platform, and developers can focus on the development and implementation of cloud service interfaces. 
 
 ## Docker

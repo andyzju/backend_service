@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -114,6 +115,51 @@ public class FileServiceImpl implements IFileService {
                 .eq(MediaFileEntity::getJobId, jobId))
                 .stream()
                 .map(this::entityConvertToDto).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取所有文件
+     *
+     * @param lastTime 最新的更新的文件
+     * @return 文件结果
+     */
+    @Override
+    public List<MediaFileEntity> getAllFilesByTime(Long lastTime) {
+        return mapper.selectList(new LambdaQueryWrapper<MediaFileEntity>()
+//                        .like(MediaFileEntity::getFileName, ".JPG")
+                        .ge(Objects.nonNull(lastTime), MediaFileEntity::getCreateTime, lastTime));
+    }
+
+    /**
+     * Paginate through all media files in this workspace deviceSn jobId.
+     *
+     * @param workspaceId
+     * @param deviceSn
+     * @param jobId
+     * @param page
+     * @param pageSize
+     * @return
+     */
+    @Override
+    public PaginationData<MediaFileDTO> getMediaFilePage(String workspaceId,
+                                                         String deviceSn,
+                                                         String jobId,
+                                                         long page,
+                                                         long pageSize) {
+        Page<MediaFileEntity> pageData = mapper.selectPage(
+                new Page<MediaFileEntity>(page, pageSize),
+                new LambdaQueryWrapper<MediaFileEntity>()
+                        .eq(MediaFileEntity::getWorkspaceId, workspaceId)
+                        .eq(MediaFileEntity::getDrone, deviceSn)
+                        .eq(MediaFileEntity::getJobId, jobId)
+                        .orderByDesc(MediaFileEntity::getId));
+        List<MediaFileDTO> records = pageData.getRecords()
+                .stream()
+                .map(this::entityConvertToDto)
+                .collect(Collectors.toList());
+
+        return new PaginationData<MediaFileDTO>(records,
+                new Pagination(pageData.getCurrent(), pageData.getSize(), pageData.getTotal()));
     }
 
     /**

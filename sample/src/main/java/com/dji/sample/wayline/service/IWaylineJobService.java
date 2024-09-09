@@ -1,6 +1,6 @@
 package com.dji.sample.wayline.service;
 
-import com.dji.sample.wayline.model.dto.WaylineJobDTO;
+import com.dji.sample.wayline.model.dto.*;
 import com.dji.sample.wayline.model.enums.WaylineJobStatusEnum;
 import com.dji.sample.wayline.model.param.CreateJobParam;
 import com.dji.sdk.common.PaginationData;
@@ -74,4 +74,37 @@ public interface IWaylineJobService {
      * @return
      */
     WaylineJobStatusEnum getWaylineState(String dockSn);
+
+    /**
+     * 设备任务列表
+     * @param workspaceId 工作空间
+     * @param page
+     * @param pageSize
+     * @return
+     */
+    PaginationData<ScreenDeviceWaylineDTO> getDeviceWaylineList(String workspaceId, long page, long pageSize);
+
+    /**
+     * 获取设备航线
+     * @param waylineId
+     * @param workspaceId
+     * @return
+     */
+    ScreenWaylineDTO getDeviceWayline(String workspaceId, String waylineId);
+
+    /**
+     * 获取设备任务
+     * @param jobId
+     * @return
+     */
+    ScreenJobDTO getDeviceJob(String jobId);
+
+    /**
+     * 获取设备任务信息汇总
+     *
+     * @param workspaceId
+     * @param deviceSn
+     * @return
+     */
+    ScreenDeviceJobInfoDTO getDeviceJobInfo(String workspaceId, String deviceSn);
 }

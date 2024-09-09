@@ -54,4 +54,28 @@ public class FileController {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 只下载链接
+     * @param workspaceId
+     * @param fileId
+     * @param response
+     * @return
+     */
+    @GetMapping("/{workspace_id}/file/{file_id}/url/only")
+    public HttpResultResponse<String> onlyGetFileUrl(@PathVariable(name = "workspace_id") String workspaceId,
+                                                     @PathVariable(name = "file_id") String fileId, HttpServletResponse response) {
+        URL url = fileService.getObjectUrl(workspaceId, fileId);
+        return HttpResultResponse.success(url.toString());
+    }
+
+    @GetMapping("/{workspace_id}/files/{device_sn}/{job_id}")
+    public HttpResultResponse<PaginationData<MediaFileDTO>> getMediaFilePage(
+            @RequestParam(defaultValue = "1") Long page,
+            @RequestParam(name = "page_size", defaultValue = "10") Long pageSize,
+            @PathVariable(name = "workspace_id") String workspaceId,
+            @PathVariable(name = "device_sn") String deviceSn,
+            @PathVariable(name = "job_id") String jobId) {
+        return HttpResultResponse.success(fileService.getMediaFilePage(workspaceId, deviceSn, jobId, page, pageSize));
+    }
 }

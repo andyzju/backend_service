@@ -4,7 +4,6 @@ import com.dji.sample.component.oss.model.OssConfiguration;
 import com.dji.sample.component.oss.service.IOssService;
 import com.dji.sdk.cloudapi.storage.CredentialsToken;
 import com.dji.sdk.cloudapi.storage.OssTypeEnum;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -20,7 +19,6 @@ import java.util.List;
  * @date 2022/5/30
  */
 @Service
-@Slf4j
 public class OssServiceContext {
 
     private IOssService ossService;

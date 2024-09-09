@@ -1,5 +1,6 @@
 package com.dji.sample.wayline.service;
 
+import com.dji.sample.wayline.model.dto.ScreenWaylineDTO;
 import com.dji.sample.wayline.model.dto.WaylineFileDTO;
 import com.dji.sdk.cloudapi.wayline.GetWaylineListRequest;
 import com.dji.sdk.cloudapi.wayline.GetWaylineListResponse;
@@ -82,4 +83,12 @@ public interface IWaylineFileService {
      * @return
      */
     void importKmzFile(MultipartFile file, String workspaceId, String creator);
+
+    /**
+     * 获取大屏的航线图文件
+     * @param workspaceId
+     * @param waylineId
+     * @return
+     */
+    ScreenWaylineDTO getScreenWaylineByWaylineId(String workspaceId, String waylineId);
 }

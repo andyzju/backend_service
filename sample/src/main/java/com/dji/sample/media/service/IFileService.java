@@ -1,6 +1,7 @@
 package com.dji.sample.media.service;
 
 import com.dji.sample.media.model.MediaFileDTO;
+import com.dji.sample.media.model.MediaFileEntity;
 import com.dji.sdk.cloudapi.media.MediaUploadCallbackRequest;
 import com.dji.sdk.common.PaginationData;
 
@@ -61,4 +62,26 @@ public interface IFileService {
      * @return
      */
     List<MediaFileDTO> getFilesByWorkspaceAndJobId(String workspaceId, String jobId);
+
+    /**
+     * 获取所有文件
+     * @param lastTime 最新的更新的文件
+     * @return 文件结果
+     */
+    List<MediaFileEntity> getAllFilesByTime(Long lastTime);
+
+    /**
+     * Paginate through all media files in this workspace deviceSn jobId.
+     * @param workspaceId
+     * @param deviceSn
+     * @param jobId
+     * @param page
+     * @param pageSize
+     * @return
+     */
+    PaginationData<MediaFileDTO> getMediaFilePage(String workspaceId,
+                                                  String deviceSn,
+                                                  String jobId,
+                                                  long page,
+                                                  long pageSize);
 }
